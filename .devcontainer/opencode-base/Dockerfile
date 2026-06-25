@@ -1,6 +1,9 @@
 FROM node:22-bookworm-slim
 
-# Install necessary base tools, sqlite3, and minimum required libraries for headless browsers
+ENV \
+    NPM_CONFIG_UPDATE_NOTIFIER=false \
+    NPM_CONFIG_FUND=false
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -23,19 +26,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpango-1.0-0 \
     libcairo2 \
     libasound2 \
-    && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
-# Cleanly rename the default 'node' user profile to 'developer'
-RUN usermod -l developer node && \
-    groupmod -n developer node && \
-    usermod -d /home/developer -m developer
+# Create a dedicated development user instead of renaming "node"
+RUN groupadd -g 1001 developer \
+ && useradd -m -u 1001 -g developer -s /bin/bash developer
 
-# Install OpenCode globally
-RUN npm install -g opencode
+RUN npm install -g \
+    opencode \
+    npm-check-updates
 
-# Establish agnostic workspace directory
+RUN mkdir -p \
+    /workspaces/workspace \
+    /home/developer/.config/opencode
+
+RUN chown -R developer:developer \
+    /workspaces \
+    /home/developer
+
 WORKDIR /workspaces/workspace
-RUN chown -R developer:developer /workspaces/workspace
 
-# Switch to the newly named developer profile
 USER developer

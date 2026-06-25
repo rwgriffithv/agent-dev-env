@@ -27,17 +27,17 @@ From the root of your parent repository, run the bootstrap script to create an i
 ### 2. Configure Your Environment Variables (Required for Search)
 OpenCode relies on VS Code's devcontainer feature to securely forward environment variables from your *host machine* (your laptop) into the container.
 
-To enable the Web Search MCP, you must set the `BRAVE_SEARCH_API_KEY` on your local laptop before spinning up the container.
+To enable the Web Search MCP, you must set the `BRAVE_API_KEY` on your local laptop before spinning up the container.
 
 **On Mac/Linux/WSL:**
 Add this to your `~/.bashrc` or `~/.zshrc`:
 ```bash
-export BRAVE_SEARCH_API_KEY="your_free_brave_developer_key"
+export BRAVE_API_KEY="your_free_brave_developer_key"
 ```
 
 **On Windows (PowerShell):**
 ```powershell
-[System.Environment]::SetEnvironmentVariable('BRAVE_SEARCH_API_KEY', 'your_free_brave_developer_key', 'User')
+[System.Environment]::SetEnvironmentVariable('BRAVE_API_KEY', 'your_free_brave_developer_key', 'User')
 ```
 
 ### 3. Spin it Up

@@ -3,13 +3,16 @@
   "provider": {
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Ollama (local)",
+      "name": "Ollama (Local)",
       "options": {
         "baseURL": "http://host.docker.internal:11434/v1"
       },
       "models": {
         "qwen2.5-coder:7b": {
           "name": "Qwen 2.5 Coder 7B"
+        },
+        "qwen2.5-coder:3b": {
+          "name": "Qwen 2.5 Coder 3B"
         }
       }
     }
@@ -22,26 +25,48 @@
   "mcp": {
     "web-fetch": {
       "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-fetch"]
-    },
-    "sqlite": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-sqlite", "--db-path", "/workspaces/my-app/database.sqlite"]
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ]
     },
     "memory": {
       "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"]
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
     },
     "brave-search": {
       "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-brave-search"],
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
       "env": {
-        "BRAVE_API_KEY": "$BRAVE_SEARCH_API_KEY"
+        "BRAVE_API_KEY": "$BRAVE_API_KEY"
       }
     },
     "playwright": {
       "type": "local",
-      "command": ["npx", "-y", "@playwright/mcp@latest"]
+      "command": [
+        "npx",
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "sqlite": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sqlite",
+        "--db-path",
+        "/workspaces/workspace/database.sqlite"
+      ]
     }
   },
   "permission": {
@@ -50,4 +75,3 @@
     }
   }
 }
-

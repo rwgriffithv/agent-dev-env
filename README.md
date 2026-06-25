@@ -1,76 +1,192 @@
-# 🧠 Agent Dev Env (Local AI Workspace)
+# 🤖 Agent Dev Environment
 
-A centralized, version-controlled repository for managing a local LLM coding assistant, devcontainers, AI system rules, and custom skills. 
+A version-controlled **agentic development environment** designed to be included as a **Git submodule** in your software projects.
 
-Designed to be used as a **Git Submodule**, this repository acts as the single "source of truth" for your AI developer environment. You can attach it to any new or existing project to instantly spin up a hardware-optimized, fully configured AI coding workspace.
+Rather than copying prompts, scripts, and configuration into every repository, this project provides a shared foundation of agent tooling that multiple projects can inherit and update independently.
 
-## 🏗️ Architecture
-* **Host Machine:** Runs [Ollama](https://ollama.com/) directly on the host OS to efficiently manage VRAM/RAM (optimized for 6GB VRAM GPUs).
-* **Devcontainer:** Houses the project code and dependencies (Node, Python, C++, etc.).
-* **IDE Extension:** Uses the `Continue` extension inside the devcontainer, networked back to the host machine's Ollama instance.
+The parent repository owns the application code. **Agent Dev Environment** provides the common AI development infrastructure.
 
 ---
 
-## 📂 Repository Structure
+# How It Works
+
+```
+parent-project/
+│
+├── src/
+├── package.json
+├── .gitignore
+│
+├── agent-dev-env/        ← Git submodule
+│   ├── rules/
+│   ├── skills/
+│   ├── scripts/
+│   └── .devcontainer/
+│
+├── .devcontainer/        ← linked/generated
+├── rules/                ← symlink
+└── .opencode/
+    └── skills/           ← symlink
+```
+
+The `bootstrap.sh` script links the shared resources from the `agent-dev-env` submodule into the parent project, allowing tools like OpenCode to discover them using their expected directory layout.
+
+This approach keeps the agent infrastructure centralized while allowing every project to use the same standards, skills, and development environment.
+
+---
+
+# What This Repository Provides
+
+This repository contains the shared components that define your AI coding environment:
+
+* 🧠 Local LLM integration (Ollama)
+* 📦 Dev Container templates
+* 📚 Reusable agent Skills (SOPs)
+* 📏 Project-wide engineering Rules
+* 🔧 Bootstrap and maintenance scripts
+* 🌐 Browser automation and web research tooling
+* 🔄 Version-controlled updates across projects
+
+Each application repository consumes these resources rather than duplicating them.
+
+---
+
+# Repository Structure
 
 ```text
 agent-dev-env/
-├── .devcontainer/        # Base templates for isolated environments (e.g., /webdev)
-├── .cursorrules          # Global System Prompts / LLM Persona rules
-├── ai-skills/            # Markdown files defining custom AI commands & workflows
-├── scripts/              # Automation scripts for host and parent repos
-│   ├── bootstrap.sh      # Injects configurations into the parent repo
-│   ├── pull-models.sh    # Downloads optimized models to the host Ollama
-│   └── update-agent.sh   # Fetches the latest rules and skills
-└── README.md             # This file
+├── .devcontainer/      # Shared Dev Container templates
+├── docs/               # Documentation
+├── rules/              # Coding standards and agent constraints
+├── scripts/            # Bootstrap and maintenance scripts
+├── skills/             # Reusable agent skills
+├── AGENTS.md           # Agent personas
+└── README.md
 ```
 
 ---
 
-## 🚀 Usage: The Submodule Workflow
+# Adding to a Project
 
-### 1. Initialize in a Parent Project
-Navigate to the root of your existing project, then add this repository as a submodule:
-
-```bash
-git submodule add <YOUR_GITHUB_REPO_URL>/agent-dev-env.git agent-dev-env
-```
-
-### 2. Pull Local LLM Models (First Time Only)
-Ensure your host machine has the correct weights downloaded to Ollama:
+Add the repository as a Git submodule:
 
 ```bash
-./agent-dev-env/scripts/pull-models.sh
+git submodule add <repository-url> agent-dev-env
 ```
 
-### 3. Bootstrap the Project (Two Modes)
-You can inject the devcontainer into your parent project in two ways, depending on whether you need project-specific customizations.
+Initialize the submodule:
 
-**Mode A: Template Mode (Recommended for most projects)**
-Creates an independent *copy* of the devcontainer template. Use this if your parent project needs its own specific database, ports, or extensions added to the devcontainer.
 ```bash
-./agent-dev-env/scripts/bootstrap.sh --template webdev
+git submodule update --init --recursive
 ```
-
-**Mode B: Global Symlink Mode**
-Creates a *symlink* to the submodule. Any changes made to the devcontainer in the parent project will directly modify the central submodule. Use this only if you want strict uniformity across multiple projects.
-```bash
-./agent-dev-env/scripts/bootstrap.sh --link webdev
-```
-
-*Note: In both modes, the `.cursorrules` AI behavior file is always symlinked, ensuring your AI's personality and skills remain globally synchronized across all projects.*
-
-### 4. Spin Up the Environment
-Open the parent repository in VS Code.
-1. Press `Cmd/Ctrl + Shift + P`
-2. Select **Dev Containers: Reopen in Container**
 
 ---
 
-## 🔄 Maintenance & Updates
+# Bootstrap the Parent Repository
 
-When you refine your AI's behavior or add a new custom skill, commit those changes directly to this `agent-dev-env` repository. To pull those updates into other projects using this submodule, run:
+From the **parent project root**, run:
 
 ```bash
-./agent-dev-env/scripts/update-agent.sh
+./agent-dev-env/scripts/bootstrap.sh --template opencode-base
 ```
+
+The bootstrap script configures the parent repository by:
+
+* installing the selected Dev Container
+* linking the shared `rules/` directory
+* linking OpenCode skills into `.opencode/skills`
+* updating `.gitignore`
+* preparing the repository for AI-assisted development
+
+After bootstrapping, your project has the directory structure expected by OpenCode without duplicating shared assets.
+
+---
+
+# Development Workflow
+
+1. Clone the parent repository.
+2. Initialize Git submodules.
+3. Run the bootstrap script.
+4. Open the repository in VS Code.
+5. Reopen in the Dev Container.
+6. Launch OpenCode.
+
+```bash
+opencode
+```
+
+---
+
+# Skills
+
+The `skills/` directory contains reusable Standard Operating Procedures (SOPs) that teach the agent how to perform common engineering tasks consistently.
+
+Each skill defines:
+
+* objective
+* execution workflow
+* validation steps
+* decision points
+* completion criteria
+
+Example skills include:
+
+* `research-web`
+* `scaffold-nextjs-route`
+* `playwright-ui-test`
+* `npm-update-deps`
+
+Because these skills live in the shared submodule, improvements automatically become available to every project after updating the submodule.
+
+---
+
+# Rules
+
+The `rules/` directory defines engineering constraints shared across projects.
+
+Typical rules include:
+
+* architectural conventions
+* framework standards
+* testing requirements
+* documentation expectations
+* coding style
+* naming conventions
+
+The agent consults these rules before generating or modifying code, ensuring consistent behavior across repositories.
+
+---
+
+# Updating the Shared Environment
+
+As the toolkit evolves, individual projects can adopt updates without changing their application code.
+
+Update the submodule:
+
+```bash
+git submodule update --remote
+```
+
+If the update modifies configuration or tooling, rerun bootstrap:
+
+```bash
+./agent-dev-env/scripts/bootstrap.sh --template opencode-base
+```
+
+---
+
+# Design Philosophy
+
+Application code belongs in the parent repository.
+
+Agent infrastructure belongs in this repository.
+
+By separating the two, you gain:
+
+* a single source of truth for agent behavior
+* reusable Skills across all projects
+* consistent engineering standards
+* reproducible development environments
+* independent versioning of application code and AI tooling
+
+Instead of every repository maintaining its own prompts, rules, and Dev Container configuration, they all build upon the same shared agentic foundation.
