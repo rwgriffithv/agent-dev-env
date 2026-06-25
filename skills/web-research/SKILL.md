@@ -1,5 +1,5 @@
 ---
-name: research-web
+name: web-research
 description: Conduct web research and synthesize external documentation using Brave Search and Web Fetch.
 ---
 

@@ -1,25 +1,31 @@
 ---
 name: manage-memory
-description: Manage the lifecycle of project knowledge; store only high-value, durable information.
+description: Manage the project Knowledge Graph; create associative links between concepts, code, and decisions.
 ---
 
 ## What I do
-- Perform targeted retrieval of past decisions or research.
-- Curate the knowledge base by evaluating if new information is "durable."
+- Build a map of "how things connect" in the project.
+- Query the graph to find non-obvious relationships.
+- Curate high-level connections to speed up agent decision-making.
+
+## When to use me (vs. Documentation)
+- **Use Documentation (`docs/`)** for: Definitive technical specs, post-mortems, architectural blueprints, and human-readable onboarding guides.
+- **Use Memory (Graph):** For connecting the dots. (e.g., "Note that this file affects that API," "This variable naming convention is related to that project rule," "We tried this fix and it failed").
 
 ## Execution Rules
 
-### Phase 1: Storage Policy (Crucial)
-Before saving to memory, verify the information meets the **"Durable Knowledge"** criteria:
-- **Architectural Decisions:** Why a tool/pattern was chosen.
-- **Hard-won insights:** Complex debugging results.
-- **Complex Patterns:** Custom configurations or non-obvious logic.
-- **Avoid:** Transient search results (e.g., "what is the syntax for map?")—keep the memory signal high.
+### Phase 1: Relationship Mapping (Crucial)
+Never save an isolated fact. Always define the relationship:
+- **`memory.add({ node: "...", relation: "...", target: "..." })`**
+- Example: `add({ node: "Stripe", relation: "CAUSES_ISSUES_IN", target: "CheckoutModule" })`
 
-### Phase 2: Operations
-- **Search:** `memory.search({ query: "..." })`
-- **Store:** `memory.add({ topic: "...", content: "...", tags: [...] })`
-- **Prune:** Use `memory.delete({ id: "..." })` to remove stale information.
+### Phase 2: Retrieval Strategy
+- Use `memory.search()` to perform graph traversals:
+    - "What is connected to this bug?"
+    - "Does this file have any documented dependencies elsewhere?"
+- If the agent needs to explain *why* something is the way it is, it should pull from `docs/` first. If it needs to know *what else* this change will impact, it should query the graph.
 
-### Phase 3: Metadata Standards
-Always include tags (e.g., `tags: ["architecture", "nextjs"]`) and, for code research, include the `commit_hash` so we can verify if the memory is stale later.
+### Phase 3: Lifecycle
+- **Connect:** If you add a new route, connect it to its relevant test file and documentation file.
+- **Update:** If an architectural decision changes, delete the old relationship and add the new one.
+- **Persistence:** This graph persists across sessions. It is the agent's "Project Intuition."
