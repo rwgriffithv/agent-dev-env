@@ -1,50 +1,41 @@
 #!/bin/bash
-# scripts/bootstrap.sh
+# scripts/bootstrap.sh - Corrected for OpenCode Skill Discovery
 
-echo "🚀 Bootstrapping AI Dev Environment..."
+set -e
 
-if [ ! -d "agent-dev-env" ]; then
-  echo "❌ Error: 'agent-dev-env' submodule not found in the current directory."
-  exit 1
-fi
+echo "🚀 Bootstrapping OpenCode Agentic Environment..."
 
+# 1. Config
+ENV_ROOT="agent-dev-env"
 MODE=$1
-ENV_TYPE=${2:-webdev} # Defaults to 'webdev' if no second argument is provided
+ENV_TYPE=${2:-opencode-base}
 
-if [ -z "$MODE" ]; then
-  echo "❌ Error: Please specify a mode. Usage: ./bootstrap.sh [--template | --link] [env_type]"
-  exit 1
-fi
-
-# 1. Handle the Devcontainer
+# 2. Setup Devcontainer
 rm -rf .devcontainer
-
 if [ "$MODE" == "--template" ]; then
-  echo "📂 Template Mode: Copying .$ENV_TYPE devcontainer..."
-  cp -r ./agent-dev-env/.devcontainer/$ENV_TYPE ./.devcontainer
-  echo "✅ You can now safely customize this project's .devcontainer without affecting the submodule."
-
-elif [ "$MODE" == "--link" ]; then
-  echo "🔗 Link Mode: Symlinking .$ENV_TYPE devcontainer..."
-  ln -sf ./agent-dev-env/.devcontainer/$ENV_TYPE ./.devcontainer
-  
-  # Add to gitignore so we don't commit the symlink
-  if ! grep -q ".devcontainer" .gitignore 2>/dev/null; then
-    echo ".devcontainer" >> .gitignore
-  fi
-  echo "⚠️ Warning: Any edits to this .devcontainer will modify the global submodule."
-
+  cp -r "$ENV_ROOT/.devcontainer/$ENV_TYPE" ./.devcontainer
 else
-  echo "❌ Error: Invalid mode. Use --template or --link."
-  exit 1
+  ln -sf "$ENV_ROOT/.devcontainer/$ENV_TYPE" .devcontainer
 fi
 
-# 2. Always Symlink the AI Rules (We want the brain to be global)
-echo "🧠 Linking .cursorrules..."
-ln -sf ./agent-dev-env/.cursorrules ./.cursorrules
+# 3. Setup Agent Rules & Skills
+echo "🧠 Linking Rules and Skills..."
 
-if ! grep -q ".cursorrules" .gitignore 2>/dev/null; then
-  echo ".cursorrules" >> .gitignore
+# Link Rules
+rm -rf rules
+ln -sf "$ENV_ROOT/rules" ./rules
+
+# Link Skills
+mkdir -p .opencode
+rm -rf .opencode/skills
+ln -sf "$(pwd)/$ENV_ROOT/skills" ./.opencode/skills
+
+
+# 4. Git Hygiene
+if ! grep -qE "^.devcontainer|^.opencode/skills" .gitignore 2>/dev/null; then
+  printf ".devcontainer\n.opencode/skills\n" >> .gitignore
 fi
 
-echo "✅ Bootstrap complete! You can now 'Reopen in Container'."
+# ...
+
+echo "✅ Bootstrap complete! Skills are now discoverable by OpenCode."
