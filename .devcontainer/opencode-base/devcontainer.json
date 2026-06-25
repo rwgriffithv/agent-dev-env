@@ -1,0 +1,23 @@
+{
+  "name": "OpenCode CLI Environment (Debian Slim)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "forwardPorts": [11434],
+  "runArgs": [
+    "--add-host=host.docker.internal:host-gateway"
+  ],
+  "containerEnv": {
+    "BRAVE_SEARCH_API_KEY": "${localEnv:BRAVE_SEARCH_API_KEY}"
+  },
+  "workspaceFolder": "/workspaces/workspace",
+  "postCreateCommand": "bash ./agent-dev-env/.devcontainer/opencode-base/setup-opencode.sh",
+  "remoteUser": "developer",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Continue.continue"
+      ]
+    }
+  }
+}
