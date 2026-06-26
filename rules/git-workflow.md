@@ -1,43 +1,145 @@
 # Git Workflow & Commit Standards
 
-As an autonomous agent, maintaining a clean, readable, and trackable version control history is critical. You must treat Git operations with the same rigor as writing production code.
+This project treats Git as a **production-grade audit system**, not just version control.
 
-## 1. Pre-Commit Analysis (No Blind Commits)
+All commits must be intentional, traceable, and reproducible.
 
-Before generating a commit message or executing `git commit`:
-*   **Check Status:** Always run `git status` to verify exactly which files are staged and unstaged.
-*   **Analyze Diffs:** Always run `git diff --staged` to read the exact lines being committed. **Never guess or assume what is in the staging area based on recent conversation.**
-*   **Test First:** Ensure all tests pass and the code compiles/builds successfully before committing. Broken code should only be committed if explicitly requested as a "WIP" (Work In Progress).
+---
 
-## 2. Conventional Commits Standard
+# 1. Pre-Commit Analysis (Mandatory)
 
-All commit messages must strictly adhere to the Conventional Commits specification. This ensures automated release notes and semantic versioning tools function correctly.
+Before creating any commit, you MUST explicitly inspect repository state.
 
-**Format:**
-`type(optional-scope): short imperative description`
+## 1.1 Required Checks
 
-**Allowed Types:**
-*   `feat`: A new feature or capability.
-*   `fix`: A bug fix.
-*   `refactor`: A code change that neither fixes a bug nor adds a feature (e.g., renaming variables, extracting functions).
-*   `chore`: Maintenance tasks, dependency updates, or changes to build/agent tooling (e.g., updating devcontainer scripts).
-*   `docs`: Changes strictly to documentation (`README.md`, `rules/`, `AGENTS.md`).
-*   `test`: Adding missing tests or correcting existing tests.
-*   `style`: Formatting changes that do not affect the meaning of the code (whitespace, semicolons).
+Run and review:
 
-**Examples:**
-*   *Correct:* `feat(auth): implement jwt token rotation`
-*   *Correct:* `fix(db): resolve sqlite connection timeout on boot`
-*   *Incorrect:* `updated the database`
-*   *Incorrect:* `fix bug in auth`
+- `git status` → determine staged vs unstaged changes
+- `git diff --staged` → inspect exact commit contents
 
-## 3. Atomic Commits
+Never assume what is staged based on prior context or conversation history.
 
-*   Commit logical units of work. Do not mix formatting changes (`style`) with new features (`feat`) in the same commit.
-*   If a task involves multiple distinct changes, use `git add <file>` to stage them separately and create multiple targeted commits rather than a single `git add .` dump.
+---
 
-## 4. Branching and Safety
+## 1.2 Code Validation
 
-*   **Never Force Push:** Do not use `git push -f` on the `main` or `master` branch.
-*   **Stash When Unsure:** If you need to switch contexts or test something quickly without losing work, use `git stash` rather than creating a garbage commit. 
-*   **Revert, Don't Rewrite:** If an error was already pushed to a remote repository, use `git revert` to undo it rather than attempting to rewrite history with `git reset --hard`.
+Before committing:
+
+- ensure code compiles successfully
+- ensure tests pass (if applicable)
+
+Only allow broken builds if explicitly marked as:
+
+> WIP (Work In Progress)
+
+---
+
+## 1.3 No Blind Commits
+
+Do NOT commit:
+
+- without inspecting staged diff
+- without understanding file changes
+- based solely on task completion assumptions
+
+---
+
+# 2. Conventional Commits Standard
+
+All commits MUST follow the Conventional Commits specification:
+
+```
+
+type(scope): short imperative description
+
+```
+
+---
+
+## 2.1 Allowed Types
+
+- `feat` → new feature
+- `fix` → bug fix
+- `refactor` → structural code changes (no behavior change)
+- `chore` → tooling, maintenance, dependencies, dev environment
+- `docs` → documentation changes only
+- `test` → test updates or additions
+- `style` → formatting-only changes
+
+---
+
+## 2.2 Examples
+
+Correct:
+
+- `feat(auth): implement JWT refresh rotation`
+- `fix(db): resolve SQLite connection timeout during startup`
+
+Incorrect:
+
+- `updated database logic`
+- `fix bug`
+- `stuff`
+
+---
+
+## 2.3 Message Quality Rule
+
+Commit messages must:
+
+- describe intent, not activity
+- be imperative (“add”, “fix”, “remove”, “refactor”)
+- be specific enough to understand impact without code inspection
+
+---
+
+# 3. Atomic Commits
+
+Each commit must represent a single logical change.
+
+## Rules:
+
+- do NOT mix features and refactors in one commit
+- do NOT combine formatting with logic changes
+- avoid `git add .` unless changes are truly atomic
+
+If multiple changes exist:
+
+- split into separate staged commits
+- isolate concerns using targeted `git add <file>`
+
+---
+
+# 4. Branching & Safety Rules
+
+## 4.1 Protected Branches
+
+Never use:
+
+- `git push -f` on `main` or `master`
+
+---
+
+## 4.2 Safe Context Switching
+
+If unsure or switching tasks:
+
+- use `git stash` instead of temporary commits
+
+---
+
+## 4.3 History Correction Policy
+
+If changes are already pushed:
+
+- use `git revert`
+- do NOT rewrite shared history with `reset --hard`
+
+---
+
+# 5. Core Principles
+
+- Git history is a source of truth
+- Every commit should be understandable in isolation
+- History must remain stable and auditable
+- Safety and traceability override convenience

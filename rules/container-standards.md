@@ -69,5 +69,3 @@ Containers should be:
 * optimized for fast rebuild and iteration
 
 They are not production deployments — they are **repeatable development substrates for AI-assisted coding systems**.
-
----

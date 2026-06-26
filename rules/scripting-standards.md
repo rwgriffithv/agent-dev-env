@@ -152,5 +152,3 @@ Scripts should behave as:
 > deterministic transformations from an unknown state → a known good state
 
 They must be safe to run in development, CI, and automated bootstrap environments without requiring manual intervention.
-
----

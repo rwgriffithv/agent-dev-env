@@ -222,5 +222,3 @@ This system is optimized for:
 The rule system is intentionally **not monolithic**.
 
 It is a **routed, selectively-applied constraint network**.
-
----

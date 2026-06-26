@@ -1,33 +1,177 @@
 # TypeScript & Next.js (App Router) Standards
 
-This project utilizes Next.js with the App Router, strict TypeScript, and a local SQLite database. You must adhere to modern Next.js paradigms and strictly typed data flows.
+This project uses Next.js App Router with strict TypeScript and a local SQLite database.
 
-## 1. Next.js App Router Architecture
+All code must follow modern App Router conventions and strictly typed data flows.
 
-*   **Server-First Default:** All components are Server Components by default. Do not add `"use client"` unless the component explicitly requires state (`useState`), lifecycle effects (`useEffect`), or browser-only APIs (like window event listeners).
-*   **Push Client Components Down:** Keep `"use client"` boundaries as low in the component tree as possible (leaf nodes). Pass static data down from Server Components as props.
-*   **Colocation:** Keep route-specific components, styles, and tests close to the route they belong to. Use the `app/` directory for routing (`page.tsx`, `layout.tsx`, `route.ts`), and keep shared UI components in a root `components/` directory.
+---
 
-## 2. Data Mutation & Server Actions
+# 1. Next.js App Router Architecture
 
-*   **No API Routes for UI Mutations:** Prefer Next.js Server Actions over building traditional `/api/` endpoints when mutating data from the frontend.
-*   **Action Placement:** Define Server Actions in a separate file with `"use server"` at the top (e.g., `actions.ts`), and import them into Client Components.
-*   **Revalidation:** Always use `revalidatePath` or `revalidateTag` inside Server Actions after mutating database state to ensure the UI updates instantly.
+## 1.1 Server-First Default
 
-## 3. SQLite Database Access
+All components are Server Components by default.
 
-*   **Server-Side Only:** Database queries must *only* occur within Server Components, Route Handlers, or Server Actions. Never leak database instances or queries into Client Components.
-*   **Type-Safe Queries:** Ensure the output of your SQLite queries is cast to a strict TypeScript interface representing the database row.
-*   **Security:** Always use parameterized queries or an ORM/query builder to prevent SQL injection. Never concatenate raw strings for SQL execution.
+Do NOT use `"use client"` unless required for:
 
-## 4. TypeScript Strictness
+- React state (`useState`)
+- lifecycle effects (`useEffect`)
+- browser-only APIs (e.g. `window`, event listeners)
 
-*   **Zero `any` Tolerance:** The use of `any` is strictly prohibited. If a type is unknown at runtime, use `unknown` and perform type narrowing/checking.
-*   **Explicit Return Types:** All Server Actions, Route Handlers, and complex utility functions must have explicit return types.
-*   **Interfaces vs Types:** Use `interface` for object shapes and component props. Use `type` for unions, intersections, and utility types.
-*   **Prop Typing:** Always define a dedicated `interface` for component props (e.g., `interface ButtonProps { ... }`) rather than inline typing.
+---
 
-## 5. Error Handling
+## 1.2 Client Component Boundaries
 
-*   Use `error.tsx` boundaries to gracefully catch server errors in the App Router.
-*   For Server Actions, return a standardized result object (e.g., `{ success: boolean; data?: T; error?: string }`) rather than throwing raw HTTP exceptions back to the client.
+- `"use client"` must be pushed as low as possible in the component tree
+- Prefer leaf-level client components
+- Server Components should pass static data via props
+
+Avoid converting entire routes into client components.
+
+---
+
+## 1.3 Colocation
+
+Keep related code close to its route:
+
+- `app/` → routing (`page.tsx`, `layout.tsx`, `route.ts`)
+- `components/` → shared UI components
+- route-specific components, styles, and tests should be colocated where practical
+
+---
+
+# 2. Data Mutation & Server Actions
+
+## 2.1 Server Actions Preferred
+
+Prefer Server Actions over API routes for UI-driven mutations.
+
+Do NOT use `/api/` routes unless required for:
+
+- external system integration
+- non-Next.js clients
+
+---
+
+## 2.2 Action Placement
+
+- Server Actions must include `"use server"`
+- Place them in dedicated modules (e.g. `actions.ts`)
+- Import into Client Components when needed
+
+---
+
+## 2.3 Revalidation
+
+After any mutation:
+
+- use `revalidatePath()` or `revalidateTag()`
+- ensure UI reflects updated database state immediately
+
+Never rely on manual refresh for correctness.
+
+---
+
+# 3. SQLite Database Access
+
+## 3.1 Server-Side Only
+
+Database access is restricted to:
+
+- Server Components
+- Route Handlers
+- Server Actions
+
+Never access SQLite from Client Components.
+
+---
+
+## 3.2 Type-Safe Queries
+
+- Query results must be cast to a strict TypeScript interface
+- Each table row should have a corresponding type definition
+
+---
+
+## 3.3 Security
+
+- Always use parameterized queries or a safe query builder
+- Never concatenate raw SQL strings
+- Treat all external input as untrusted
+
+---
+
+# 4. TypeScript Strictness
+
+## 4.1 No `any`
+
+- `any` is strictly forbidden
+- Use `unknown` + type narrowing when needed
+
+---
+
+## 4.2 Explicit Return Types
+
+Must explicitly type:
+
+- Server Actions
+- Route Handlers
+- complex utility functions
+
+---
+
+## 4.3 Interfaces vs Types
+
+- `interface` → object shapes (props, DB rows, entities)
+- `type` → unions, intersections, utility types
+
+---
+
+## 4.4 Props Typing
+
+Always define a named interface for component props:
+
+```ts id="props-example"
+interface ButtonProps {
+  label: string;
+}
+```
+
+Avoid inline prop definitions.
+
+---
+
+# 5. Error Handling
+
+## 5.1 UI Error Boundaries
+
+Use:
+
+* `error.tsx` for route-level errors
+* `not-found.tsx` where applicable
+
+---
+
+## 5.2 Server Action Responses
+
+Server Actions should return structured results:
+
+```ts id="action-response"
+{
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+```
+
+Do NOT throw raw errors directly to the client.
+
+---
+
+# 6. Core Principles
+
+* Server-first architecture by default
+* Minimal client-side execution
+* Strict TypeScript everywhere
+* Database access only on the server
+* UI reflects server state via revalidation

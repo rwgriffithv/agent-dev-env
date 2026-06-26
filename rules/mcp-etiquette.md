@@ -1,35 +1,153 @@
-# MCP Etiquette & Usage Guidelines
+# MCP Etiquette & Tool Usage Guidelines
 
-As an agent equipped with Model Context Protocol (MCP) tools, you must interact with external systems, networks, and databases efficiently. Your context window is a limited, highly valuable resource — protect it.
+This document defines how to efficiently use MCP tools (memory, sqlite, search, web-fetch, playwright).
 
-## 1. Tool Selection Hierarchy
+MCP tools are external system calls and must be used deliberately to minimize cost, latency, and context usage.
 
-Before executing any command, determine the least expensive and most accurate path to the answer:
+---
 
-*   **Local State (`memory`, `sqlite`):** Use these first to understand the current project context, previous decisions, and data structures.
-*   **External Discovery (`brave-search`):** Use this to find official documentation, recent API changes, or solutions to specific errors.
-*   **Targeted Reading (`web-fetch`):** Use this *only* after identifying a specific, high-value URL. Do not blindly fetch root domains or massive index pages.
-*   **Validation (`playwright`):** Use this as the final step to verify UI rendering or complex interactions only *after* code is written and the server is running.
+# 1. Tool Selection Priority
 
-## 2. Search and Fetch Protocol (The "Look Before You Leap" Rule)
+Before using any MCP tool, consider whether a higher-level **Skill** already solves the problem.
 
-When you lack information about a library or API, follow this exact sequence:
+## 0. Skills (Highest Priority)
 
-1.  **Formulate a specific search query:** e.g., "Next.js App Router SQLite integration example".
-2.  **Analyze search results:** Identify the most relevant, official documentation URL.
-3.  **Fetch with precision:** Use the `web-fetch` tool on that exact URL. 
-4.  **Extract, don't dump:** Do not dump raw HTML, massive JSON payloads, or entire documentation pages into your output. Extract the required syntax, summarize the solution internally, and proceed with the task.
+If a relevant Skill exists:
 
-## 3. Database Safety (`sqlite`)
+- prefer executing the Skill first
+- Skills may internally use MCP tools
+- do NOT manually re-implement Skill workflows unless necessary
 
-*   **Schema First:** Always inspect the schema before writing a `SELECT` query.
-*   **Limit Output:** Always append `LIMIT 10` to exploratory queries to prevent context overflow.
-*   **Verify Before Mutating:** Never execute a state-changing query (`UPDATE`, `DELETE`, `DROP`) without explicitly confirming the exact target rows via a prior `SELECT` statement.
+Skills are the primary orchestration layer over MCP tools.
 
-## 4. Error Handling and Fallbacks
+---
 
-If an MCP tool fails, times out, or returns a 404/500 error:
+## 1. Local State (Preferred fallback)
+- `memory`
+- `sqlite`
 
-*   **No Infinite Loops:** Do not blindly retry the exact same command.
-*   **Pivot:** Adjust your parameters (e.g., broaden the search query, check the URL path, simplify the SQL query).
-*   **Graceful Exit:** If a tool consistently fails, inform the user immediately and suggest a manual workaround rather than guessing the syntax.
+Use when:
+- required information already exists in system memory or database
+- continuing prior work
+
+---
+
+## 2. External Discovery
+- `brave-search`
+
+Use when:
+- information is not available locally
+- documentation or external references are needed
+
+Prefer precise queries.
+
+---
+
+## 3. Targeted Retrieval
+- `web-fetch`
+
+Use ONLY when:
+- a specific URL is already identified
+
+Do NOT:
+- fetch entire domains
+- crawl multiple pages
+- retrieve large unfiltered content
+
+---
+
+## 4. Execution / Validation
+- `playwright`
+
+Use only when:
+- UI must be validated
+- frontend behavior must be verified
+- application is already running
+
+Do NOT use for speculation.
+
+---
+
+# 2. Standard Workflow (Preferred Pattern)
+
+When information is missing:
+
+1. Check if a relevant **Skill** exists → use it if available
+2. Use `brave-search` for precise discovery if needed
+3. Select a single authoritative URL
+4. Use `web-fetch` on that URL
+5. Extract only required information
+6. Proceed with implementation
+
+Do not skip directly to raw tool usage when Skills exist.
+
+---
+
+# 3. SQLite Safety Rules
+
+When using `sqlite`:
+
+## 3.1 Schema Awareness
+Always inspect schema before querying.
+
+## 3.2 Read Queries
+- Use `LIMIT 10` for exploratory queries
+- Avoid unbounded outputs
+
+## 3.3 Write Safety
+Before executing:
+- `UPDATE`
+- `DELETE`
+- `DROP`
+
+You must:
+1. run a `SELECT` to confirm target rows
+2. verify impact
+3. only then execute mutation
+
+Never assume state.
+
+---
+
+# 4. Search Discipline
+
+When using `brave-search`:
+
+- prefer specific queries over generic ones
+- include version/framework context when relevant
+- avoid repeating identical queries
+
+If results are unclear:
+- refine query instead of repeating
+- narrow scope before expanding
+
+---
+
+# 5. Error Handling & Recovery
+
+If an MCP tool fails:
+
+- do NOT retry identical calls repeatedly
+- adjust one variable at a time (query, endpoint, parameters)
+- switch tools if appropriate
+
+If failure persists:
+
+- stop automation
+- explain the issue
+- propose a manual fallback
+
+Do not hallucinate tool outputs.
+
+---
+
+# 6. Core Principle
+
+MCP tools are **expensive external system calls**.
+
+Skills are the preferred abstraction layer over MCP tools.
+
+Every tool call must be:
+- purposeful
+- minimal in scope
+- predictable in output

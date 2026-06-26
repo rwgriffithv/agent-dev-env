@@ -77,5 +77,3 @@ When working:
    - use `rules/` for application and architecture tasks
 
 3. Ignore unrelated rules for the current task
-
----
