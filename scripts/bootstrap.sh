@@ -14,7 +14,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="$(pwd)"
 
-TEMPLATE="opencode-base"
+TEMPLATE="base"
 MODE="symlink"
 
 ###############################################################################
@@ -24,18 +24,24 @@ MODE="symlink"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --template)
+            [[ $# -ge 2 ]] || {
+                echo "❌ Missing template name."
+                exit 1
+            }
             TEMPLATE="$2"
-            MODE="copy"
             shift 2
             ;;
-        --symlink)
-            MODE="symlink"
-            shift
-            ;;
+
         --copy)
             MODE="copy"
             shift
             ;;
+
+        --symlink)
+            MODE="symlink"
+            shift
+            ;;
+
         --help|-h)
             cat <<EOF
 Usage:
@@ -45,7 +51,7 @@ Usage:
 Options:
 
   --template <name>   Devcontainer template to install
-                      (default: opencode-base)
+                      (default: base)
 
   --copy              Copy the devcontainer instead of symlinking it.
 
@@ -55,18 +61,16 @@ Examples:
 
   ./agent-dev-env/scripts/bootstrap.sh
 
-  ./agent-dev-env/scripts/bootstrap.sh \
-      --template webdev
+  ./agent-dev-env/scripts/bootstrap.sh --template webdev
 
-  ./agent-dev-env/scripts/bootstrap.sh \
-      --template opencode-base \
-      --copy
+  ./agent-dev-env/scripts/bootstrap.sh --template base --copy
 
 EOF
             exit 0
             ;;
+
         *)
-            echo "Unknown option: $1"
+            echo "❌ Unknown option: $1"
             exit 1
             ;;
     esac
@@ -80,17 +84,17 @@ if [[ "$PROJECT_ROOT" == "$ENV_ROOT" ]]; then
     echo "❌ Bootstrap must be run from the parent repository."
     echo
     echo "Example:"
-    echo "    cd .."
-    echo "    ./agent-dev-env/scripts/bootstrap.sh"
+    echo "  cd .."
+    echo "  ./agent-dev-env/scripts/bootstrap.sh"
     exit 1
 fi
 
-if [[ ! -d "$ENV_ROOT/rules" ]]; then
+if [[ ! -d "$ENV_ROOT/skills" ]]; then
     echo "❌ agent-dev-env appears to be incomplete."
     echo
     echo "Did you initialize the submodule?"
     echo
-    echo "    git submodule update --init --recursive"
+    echo "  git submodule update --init --recursive"
     exit 1
 fi
 
@@ -107,39 +111,81 @@ echo
 # Install Devcontainer
 ###############################################################################
 
-if [[ -e .devcontainer && ! -L .devcontainer ]]; then
-    echo "⚠️  Existing .devcontainer found."
-    echo "    Backing up to .devcontainer.bak"
-    rm -rf .devcontainer.bak
-    mv .devcontainer .devcontainer.bak
-fi
+EXPECTED_TARGET="$ENV_ROOT/.devcontainer/$TEMPLATE"
 
-rm -rf .devcontainer
+if [[ "$MODE" == "symlink" ]]; then
 
-if [[ "$MODE" == "copy" ]]; then
-    cp -R "$ENV_ROOT/.devcontainer/$TEMPLATE" .devcontainer
-    echo "✓ Installed devcontainer template ($TEMPLATE)"
+    if [[ -L .devcontainer ]]; then
+
+        CURRENT_TARGET="$(readlink .devcontainer)"
+
+        if [[ "$CURRENT_TARGET" == "$EXPECTED_TARGET" ]]; then
+            echo "✓ Devcontainer already linked"
+        else
+            rm .devcontainer
+            ln -s "$EXPECTED_TARGET" .devcontainer
+            echo "✓ Linked devcontainer template ($TEMPLATE)"
+        fi
+
+    else
+
+        if [[ -e .devcontainer ]]; then
+            echo "⚠️  Existing .devcontainer found."
+            echo "    Backing up to .devcontainer.bak"
+            rm -rf .devcontainer.bak
+            mv .devcontainer .devcontainer.bak
+        fi
+
+        ln -s "$EXPECTED_TARGET" .devcontainer
+        echo "✓ Linked devcontainer template ($TEMPLATE)"
+
+    fi
+
 else
-    ln -sfn "$ENV_ROOT/.devcontainer/$TEMPLATE" .devcontainer
-    echo "✓ Linked devcontainer template ($TEMPLATE)"
+
+    if [[ -e .devcontainer ]]; then
+        echo "⚠️  Existing .devcontainer found."
+        echo "    Backing up to .devcontainer.bak"
+        rm -rf .devcontainer.bak
+        mv .devcontainer .devcontainer.bak
+    fi
+
+    cp -R "$EXPECTED_TARGET" .devcontainer
+    echo "✓ Installed devcontainer template ($TEMPLATE)"
+
 fi
 
 ###############################################################################
-# Rules
-###############################################################################
-
-rm -rf rules
-ln -sfn "$ENV_ROOT/rules" rules
-echo "✓ Linked rules"
-
-###############################################################################
-# Skills
+# Shared Skills
 ###############################################################################
 
 mkdir -p .opencode
+
 rm -rf .opencode/skills
+
 ln -sfn "$ENV_ROOT/skills" .opencode/skills
-echo "✓ Linked OpenCode skills"
+
+echo "✓ Linked shared skills"
+
+###############################################################################
+# Project Structure
+###############################################################################
+
+mkdir -p rules
+
+if [[ ! -f AGENTS.md ]]; then
+
+cat > AGENTS.md <<'EOF'
+# Project Agent Instructions
+
+Describe the project architecture, conventions, workflows, and any
+project-specific guidance for the coding agent.
+
+EOF
+
+    echo "✓ Created AGENTS.md"
+
+fi
 
 ###############################################################################
 # .gitignore
@@ -147,10 +193,12 @@ echo "✓ Linked OpenCode skills"
 
 touch .gitignore
 
-grep -qxF ".devcontainer" .gitignore || \
-    echo ".devcontainer" >> .gitignore
+if [[ "$MODE" == "symlink" ]]; then
+    grep -qxF ".devcontainer" .gitignore ||
+        echo ".devcontainer" >> .gitignore
+fi
 
-grep -qxF ".opencode/skills" .gitignore || \
+grep -qxF ".opencode/skills" .gitignore ||
     echo ".opencode/skills" >> .gitignore
 
 echo "✓ Updated .gitignore"
@@ -162,11 +210,25 @@ echo "✓ Updated .gitignore"
 echo
 echo "✅ Bootstrap complete."
 echo
+echo "Installed:"
+echo
+printf "  %-14s %s\n" "Devcontainer:" "$MODE ($TEMPLATE)"
+printf "  %-14s %s\n" "Skills:" "Shared (agent-dev-env)"
+printf "  %-14s %s\n" "Rules:" "Project-owned (rules/)"
+printf "  %-14s %s\n" "AGENTS.md:" "Project-owned"
+echo
 echo "Next steps:"
 echo
-echo "  1. Open the repository in VS Code"
-echo "  2. Reopen in Dev Container"
-echo "  3. Launch OpenCode"
+echo "  1. Add project-specific rules to:"
+echo "       rules/"
 echo
-echo "      opencode"
+echo "  2. Update AGENTS.md with project context."
+echo
+echo "  3. Open the repository in VS Code."
+echo
+echo "  4. Reopen in Dev Container."
+echo
+echo "  5. Launch OpenCode:"
+echo
+echo "       opencode"
 echo

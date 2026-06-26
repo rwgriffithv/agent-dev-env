@@ -32,9 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN groupadd -g 1001 developer \
  && useradd -m -u 1001 -g developer -s /bin/bash developer
 
-RUN npm install -g \
-    opencode \
-    npm-check-updates
+RUN npm install -g opencode
 
 RUN mkdir -p \
     /workspaces/workspace \

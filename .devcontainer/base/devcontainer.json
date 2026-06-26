@@ -1,5 +1,5 @@
 {
-  "name": "Agent Development Environment (OpenCode)",
+  "name": "Agent Development Environment",
   "build": {
     "dockerfile": "Dockerfile"
   },
@@ -14,8 +14,8 @@
   "containerEnv": {
     "BRAVE_API_KEY": "${localEnv:BRAVE_API_KEY}"
   },
-  "postCreateCommand": "bash ./agent-dev-env/.devcontainer/opencode-base/setup.sh",
-  "updateContentCommand": "bash ./agent-dev-env/.devcontainer/opencode-base/setup.sh",
+  "postCreateCommand": "bash ./agent-dev-env/.devcontainer/base/configure.sh",
+  "updateContentCommand": "bash ./agent-dev-env/.devcontainer/base/configure.sh",
   "customizations": {
     "vscode": {
       "extensions": [

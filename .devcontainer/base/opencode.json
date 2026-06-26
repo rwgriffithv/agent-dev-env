@@ -20,7 +20,7 @@
   "defaultModel": "qwen2.5-coder:7b",
   "instructions": [
     "AGENTS.md",
-    "rules/*.md"
+    "agent-dev-env/rules/rules.md"
   ],
   "mcp": {
     "web-fetch": {

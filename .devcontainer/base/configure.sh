@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 #
-# .devcontainer/opencode-base/setup.sh
+# .devcontainer/base/configure.sh
 #
-# Sets up the devcontainer environment after creation.
+# Configures the devcontainer environment after creation.
 #
 set -euo pipefail
 
 CONFIG_DIR="$HOME/.config/opencode"
 CONFIG_FILE="$CONFIG_DIR/opencode.json"
-SOURCE_CONFIG="./agent-dev-env/.devcontainer/opencode-base/opencode.json"
+SOURCE_CONFIG="./agent-dev-env/.devcontainer/base/opencode.json"
 
 echo
 echo "⚙️  Configuring Agent Development Environment..."
