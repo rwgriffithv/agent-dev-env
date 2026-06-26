@@ -1,4 +1,11 @@
-FROM node:22-bookworm-slim
+# Define the registry, defaults to rwgriffithv
+ARG IMAGE_REGISTRY=rwgriffithv
+
+# Define the base image path, which defaults to the registry + image name
+ARG PROD_BASE_IMAGE=${IMAGE_REGISTRY}/web-deploy-base:latest
+
+# Use the chained variable
+FROM ${PROD_BASE_IMAGE}
 
 ENV \
     NPM_CONFIG_UPDATE_NOTIFIER=false \

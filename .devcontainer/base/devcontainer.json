@@ -1,7 +1,11 @@
 {
   "name": "Agent Development Environment",
   "build": {
-    "dockerfile": "Dockerfile"
+    "dockerfile": "Dockerfile",
+    "args": {
+      "IMAGE_REGISTRY": "${localEnv:IMAGE_REGISTRY}",
+      "PROD_BASE_IMAGE": "${localEnv:PROD_BASE_IMAGE}"
+    }
   },
   "workspaceFolder": "/workspaces/workspace",
   "remoteUser": "developer",

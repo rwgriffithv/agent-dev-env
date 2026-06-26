@@ -61,8 +61,6 @@ Examples:
 
   ./agent-dev-env/scripts/bootstrap.sh
 
-  ./agent-dev-env/scripts/bootstrap.sh --template webdev
-
   ./agent-dev-env/scripts/bootstrap.sh --template base --copy
 
 EOF
