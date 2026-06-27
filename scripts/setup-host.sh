@@ -6,6 +6,11 @@
 #
 set -euo pipefail
 
+# Load .env file if it exists
+if [ -f ".env" ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
 ########################################
 # OpenCode Host Setup
 ########################################
@@ -74,6 +79,7 @@ sudo apt-get update
 
 install_if_missing curl
 install_if_missing git
+install_if_missing zstd
 
 ########################################
 # Docker
@@ -162,13 +168,13 @@ else
 
     cat <<EOF
 
-Set the following in your shell profile (~/.bashrc):
+Set the following in your shell profile (.env):
 
-export BRAVE_API_KEY="your-key"
+BRAVE_API_KEY="your-key"
 
 Then reload your shell:
 
-source ~/.bashrc
+source .env
 
 EOF
 fi
@@ -188,6 +194,7 @@ fi
 
 echo
 echo "Next steps:"
-echo "  1. Open the project in VS Code."
-echo "  2. Reopen in the Dev Container."
-echo "  3. Run: opencode"
+echo "  1. Bootstrap submodules."
+echo "  2. Open the project in VS Code."
+echo "  3. Reopen in the Dev Container."
+echo "  4. Run: opencode"
