@@ -41,12 +41,13 @@ The parent repository owns the application.
 
 The toolkit contains four primary components:
 
-| Component         | Purpose                                                                                              |
-| ----------------- | ---------------------------------------------------------------------------------------------------- |
-| **Dev Container** | A reproducible development environment for OpenCode and local AI development.                        |
-| **Skills**        | Reusable Standard Operating Procedures (SOPs) that teach the agent how to perform engineering tasks. |
-| **Rules**         | Shared engineering standards and coding conventions applied across projects.                         |
-| **Scripts**       | Bootstrap and maintenance utilities for installing and updating the environment.                     |
+| Component | Purpose |
+| --- | --- |
+| **Configuration** | Setup the host with dependencies and bootstrap project configs. |
+| **Dev Container** | A reproducible development environment for OpenCode and local AI development. |
+| **Skills** | Reusable Standard Operating Procedures (SOPs) that teach the agent how to perform engineering tasks. |
+| **Rules** | Shared engineering standards and coding conventions applied across projects. |
+| **Scripts** | Bootstrap and maintenance utilities for installing and updating the environment. |
 
 Because these components live in a shared repository, improvements can be rolled out across multiple projects simply by updating the Git submodule.
 
@@ -69,32 +70,35 @@ agent-dev-env/
 
 # Installing into a Project
 
-Add the toolkit as a Git submodule:
+Add the submodule to your repository:
 
 ```bash
-git submodule add <repository-url> agent-dev-env
-```
-
-Initialize it:
-
-```bash
+git submodule add <repository-url> web-deploy-env
 git submodule update --init --recursive
+
 ```
 
-Then bootstrap the parent repository:
+### 1. Configuration
+
+Create/update the `.env` file in your project root with the following requirements:
+
+```text
+DOMAIN=yourdomain.com
+TUNNEL_TOKEN=your_cloudflare_tunnel_token
+
+```
+
+### 2. Setup and Bootstrap
+
+Setup host dependencies and bootstrap the parent repository:
 
 ```bash
-./agent-dev-env/scripts/bootstrap.sh
+./web-deploy-env/scripts/setup-host.sh
+./web-deploy-env/scripts/bootstrap.sh
+
 ```
 
-Bootstrap installs the shared development environment by:
-
-* installing or linking the selected Dev Container
-* linking the shared OpenCode skills
-* creating project-owned `rules/` and `AGENTS.md` if needed
-* updating `.gitignore` where appropriate
-
-The bootstrap process is intentionally non-destructive. Project-specific files are preserved across subsequent runs.
+The setup and bootstrap processes are idempotent.
 
 ---
 
@@ -159,7 +163,7 @@ For a typical project:
 
 1. Clone the repository.
 2. Initialize Git submodules.
-3. Run the bootstrap script.
+3. Run each submodule's setup-host and bootstrap scripts.
 4. Open the project in VS Code.
 5. Reopen in the Dev Container.
 6. Launch OpenCode.

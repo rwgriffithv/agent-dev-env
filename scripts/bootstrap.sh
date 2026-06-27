@@ -11,227 +11,159 @@ if [ -f ".env" ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
-###############################################################################
-# Configuration
-###############################################################################
+########################################
+# Logging
+########################################
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PROJECT_ROOT="$(pwd)"
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+RED="\033[0;31m"
+BLUE="\033[0;34m"
+NC="\033[0m"
+
+info() { echo -e "${BLUE}==>${NC} $*"; }
+success() { echo -e "${GREEN}✓${NC} $*"; }
+warn() { echo -e "${YELLOW}⚠${NC} $*"; }
+fail() { echo -e "${RED}✗${NC} $*"; exit 1; }
+
+########################################
+# Pathing
+########################################
+
+SUBMODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$(pwd)"
+
+[[ "$PROJECT_DIR" == "$SUBMODULE_DIR" ]] && fail "Bootstrap must be run from the parent repository."
+
+########################################
+# Parse Arguments
+########################################
 
 TEMPLATE="base"
 MODE="symlink"
-
-###############################################################################
-# Parse Arguments
-###############################################################################
+FORCE_OVERWRITE=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --template)
-            [[ $# -ge 2 ]] || {
-                echo "❌ Missing template name."
-                exit 1
-            }
+            [[ $# -ge 2 ]] || fail "Missing template name."
             TEMPLATE="$2"
             shift 2
             ;;
-
         --copy)
             MODE="copy"
             shift
             ;;
-
         --symlink)
             MODE="symlink"
             shift
             ;;
-
+        --force)
+            FORCE_OVERWRITE=true
+            info "Forcing overwrites..."
+            shift
+            ;;
         --help|-h)
             cat <<EOF
-Usage:
-
-  bootstrap.sh [options]
+Usage: bootstrap.sh [options]
 
 Options:
-
-  --template <name>   Devcontainer template to install
-                      (default: base)
-
-  --copy              Copy the devcontainer instead of symlinking it.
-
-  --symlink           Symlink the devcontainer (default).
-
-Examples:
-
-  ./agent-dev-env/scripts/bootstrap.sh
-
-  ./agent-dev-env/scripts/bootstrap.sh --template base --copy
-
+  --template <name>   Devcontainer template (default: base)
+  --copy              Copy devcontainer instead of symlinking
+  --symlink           Symlink devcontainer (default)
+  --force             Force overwrite existing configurations
 EOF
             exit 0
             ;;
-
         *)
-            echo "❌ Unknown option: $1"
-            exit 1
+            fail "Unknown option: $1"
             ;;
     esac
 done
 
-###############################################################################
-# Safety Checks
-###############################################################################
+[[ ! -d "$SUBMODULE_DIR/.devcontainer/$TEMPLATE" ]] && fail "Unknown devcontainer template: $TEMPLATE"
 
-if [[ "$PROJECT_ROOT" == "$ENV_ROOT" ]]; then
-    echo "❌ Bootstrap must be run from the parent repository."
-    echo
-    echo "Example:"
-    echo "  cd .."
-    echo "  ./agent-dev-env/scripts/bootstrap.sh"
-    exit 1
-fi
+########################################
+# Environment Variables
+########################################
 
-if [[ ! -d "$ENV_ROOT/skills" ]]; then
-    echo "❌ agent-dev-env appears to be incomplete."
-    echo
-    echo "Did you initialize the submodule?"
-    echo
-    echo "  git submodule update --init --recursive"
-    exit 1
-fi
+REQUIRED_VARS=("BRAVE_API_KEY")
 
-if [[ ! -d "$ENV_ROOT/.devcontainer/$TEMPLATE" ]]; then
-    echo "❌ Unknown devcontainer template: $TEMPLATE"
-    exit 1
-fi
+for var in "${REQUIRED_VARS[@]}"; do
+    if [[ -z "${!var:-}" ]]; then
+        warn "Required environment variable '$var' is not set.
+Please ensure it is defined in your .env file or set manually."
+    fi
+done
 
-echo
-echo "🚀 Bootstrapping Agent Development Environment..."
-echo
-
-###############################################################################
+########################################
 # Install Devcontainer
-###############################################################################
+########################################
 
-EXPECTED_TARGET="$ENV_ROOT/.devcontainer/$TEMPLATE"
+EXPECTED_TARGET="$SUBMODULE_DIR/.devcontainer/$TEMPLATE"
 
 if [[ "$MODE" == "symlink" ]]; then
-
     if [[ -L .devcontainer ]]; then
-
         CURRENT_TARGET="$(readlink .devcontainer)"
-
         if [[ "$CURRENT_TARGET" == "$EXPECTED_TARGET" ]]; then
-            echo "✓ Devcontainer already linked"
+            success "Devcontainer already linked."
         else
             rm .devcontainer
             ln -s "$EXPECTED_TARGET" .devcontainer
-            echo "✓ Linked devcontainer template ($TEMPLATE)"
+            success "Linked devcontainer template ($TEMPLATE)."
         fi
-
     else
-
         if [[ -e .devcontainer ]]; then
-            echo "⚠️  Existing .devcontainer found."
-            echo "    Backing up to .devcontainer.bak"
-            rm -rf .devcontainer.bak
-            mv .devcontainer .devcontainer.bak
+            warn "Existing .devcontainer found. Backing up to .devcontainer.bak"
+            rm -rf .devcontainer.bak && mv .devcontainer .devcontainer.bak
         fi
-
         ln -s "$EXPECTED_TARGET" .devcontainer
-        echo "✓ Linked devcontainer template ($TEMPLATE)"
-
+        success "Linked devcontainer template ($TEMPLATE)."
     fi
-
 else
-
     if [[ -e .devcontainer ]]; then
-        echo "⚠️  Existing .devcontainer found."
-        echo "    Backing up to .devcontainer.bak"
-        rm -rf .devcontainer.bak
-        mv .devcontainer .devcontainer.bak
+        warn "Existing .devcontainer found. Backing up to .devcontainer.bak"
+        rm -rf .devcontainer.bak && mv .devcontainer .devcontainer.bak
     fi
-
     cp -R "$EXPECTED_TARGET" .devcontainer
-    echo "✓ Installed devcontainer template ($TEMPLATE)"
-
+    success "Installed devcontainer template ($TEMPLATE)."
 fi
 
-###############################################################################
-# Shared Skills
-###############################################################################
+########################################
+# Shared Agent Configuration
+########################################
 
 mkdir -p .opencode
-
 rm -rf .opencode/skills
-
-ln -sfn "$ENV_ROOT/skills" .opencode/skills
-
-echo "✓ Linked shared skills"
-
-###############################################################################
-# Project Structure
-###############################################################################
+ln -sfn "$SUBMODULE_DIR/skills" .opencode/skills
+success "Linked shared skills."
 
 mkdir -p rules
-
 if [[ ! -f AGENTS.md ]]; then
-
-cat > AGENTS.md <<'EOF'
+    cat > AGENTS.md <<'EOF'
 # Project Agent Instructions
-
 Describe the project architecture, conventions, workflows, and any
 project-specific guidance for the coding agent.
-
 EOF
-
-    echo "✓ Created AGENTS.md"
-
+    success "Created AGENTS.md."
 fi
 
-###############################################################################
+########################################
 # .gitignore
-###############################################################################
+########################################
 
 touch .gitignore
+[[ "$MODE" == "symlink" ]] && grep -qxF ".devcontainer" .gitignore || echo ".devcontainer" >> .gitignore
+grep -qxF ".opencode/skills" .gitignore || echo ".opencode/skills" >> .gitignore
+success "Updated .gitignore."
 
-if [[ "$MODE" == "symlink" ]]; then
-    grep -qxF ".devcontainer" .gitignore ||
-        echo ".devcontainer" >> .gitignore
-fi
+########################################
+# Final Summary
+########################################
 
-grep -qxF ".opencode/skills" .gitignore ||
-    echo ".opencode/skills" >> .gitignore
-
-echo "✓ Updated .gitignore"
-
-###############################################################################
-# Complete
-###############################################################################
-
-echo
-echo "✅ Bootstrap complete."
-echo
-echo "Installed:"
-echo
+echo -e "\n----------------------------------------"
+success "Bootstrap complete."
 printf "  %-14s %s\n" "Devcontainer:" "$MODE ($TEMPLATE)"
 printf "  %-14s %s\n" "Skills:" "Shared (agent-dev-env)"
 printf "  %-14s %s\n" "Rules:" "Project-owned (rules/)"
 printf "  %-14s %s\n" "AGENTS.md:" "Project-owned"
-echo
-echo "Next steps:"
-echo
-echo "  1. Add project-specific rules to:"
-echo "       rules/"
-echo
-echo "  2. Update AGENTS.md with project context."
-echo
-echo "  3. Open the repository in VS Code."
-echo
-echo "  4. Reopen in Dev Container."
-echo
-echo "  5. Launch OpenCode:"
-echo
-echo "       opencode"
-echo

@@ -1,5 +1,5 @@
-# Define the registry, defaults to rwgriffithv
-ARG IMAGE_REGISTRY=rwgriffithv
+# Define the registry, defaults to local
+ARG IMAGE_REGISTRY=local
 
 # Define the base image path, which defaults to the registry + image name
 ARG PROD_BASE_IMAGE=${IMAGE_REGISTRY}/web-deploy-base:latest
