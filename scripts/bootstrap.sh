@@ -32,6 +32,7 @@ fail() { echo -e "${RED}✗${NC} $*"; exit 1; }
 
 SUBMODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_DIR="$(pwd)"
+SUBMODULE_REL="${SUBMODULE_DIR#"${PROJECT_DIR}/"}"
 
 [[ "$PROJECT_DIR" == "$SUBMODULE_DIR" ]] && fail "Bootstrap must be run from the parent repository."
 
@@ -106,7 +107,8 @@ for template_path in "$SOURCE_TEMPLATES_DIR"/*/; do
         if [[ -e "$target_path" && "$FORCE_OVERWRITE" == "false" ]]; then
             warn "Skipping $template_name (already exists, use --force to overwrite)."
         else
-            ln -sfn "$template_path" "$target_path"
+            rel_target="../${SUBMODULE_REL}/.devcontainer/${template_name}"
+            ln -sfn "$rel_target" "$target_path"
             success "Linked template: $template_name"
         fi
     else
@@ -126,7 +128,7 @@ done
 
 mkdir -p .opencode
 rm -rf .opencode/skills
-ln -sfn "$SUBMODULE_DIR/skills" .opencode/skills
+ln -sfn "../${SUBMODULE_REL}/skills" .opencode/skills
 success "Linked shared skills."
 
 mkdir -p rules

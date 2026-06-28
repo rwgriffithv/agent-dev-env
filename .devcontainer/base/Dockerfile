@@ -39,10 +39,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Create a dedicated development user if needed
 RUN if ! getent group developer >/dev/null; then \
-    groupadd -g 1001 developer; \
+    groupadd -g 1000 developer; \
     fi \
     && if ! id -u developer >/dev/null 2>&1; then \
-    useradd -m -u 1001 -g developer -s /bin/bash developer; \
+    useradd -m -u 1000 -g developer -s /bin/bash developer; \
     fi
 
 
