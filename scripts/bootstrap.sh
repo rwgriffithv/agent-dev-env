@@ -45,11 +45,6 @@ FORCE_OVERWRITE=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --template)
-            [[ $# -ge 2 ]] || fail "Missing template name."
-            TEMPLATE="$2"
-            shift 2
-            ;;
         --copy)
             MODE="copy"
             shift
@@ -68,7 +63,6 @@ while [[ $# -gt 0 ]]; do
 Usage: bootstrap.sh [options]
 
 Options:
-  --template <name>   Devcontainer template (default: base)
   --copy              Copy devcontainer instead of symlinking
   --symlink           Symlink devcontainer (default)
   --force             Force overwrite existing configurations
@@ -80,8 +74,6 @@ EOF
             ;;
     esac
 done
-
-[[ ! -d "$SUBMODULE_DIR/.devcontainer/$TEMPLATE" ]] && fail "Unknown devcontainer template: $TEMPLATE"
 
 ########################################
 # Environment Variables
@@ -97,37 +89,36 @@ Please ensure it is defined in your .env file or set manually."
 done
 
 ########################################
-# Install Devcontainer
+# Install Devcontainers
 ########################################
 
-EXPECTED_TARGET="$SUBMODULE_DIR/.devcontainer/$TEMPLATE"
+SOURCE_TEMPLATES_DIR="$SUBMODULE_DIR/.devcontainer"
+TARGET_DEVCONTAINER_DIR="$PROJECT_DIR/.devcontainer"
 
-if [[ "$MODE" == "symlink" ]]; then
-    if [[ -L .devcontainer ]]; then
-        CURRENT_TARGET="$(readlink .devcontainer)"
-        if [[ "$CURRENT_TARGET" == "$EXPECTED_TARGET" ]]; then
-            success "Devcontainer already linked."
+mkdir -p "$TARGET_DEVCONTAINER_DIR"
+info "Installing all templates ($MODE)..."
+
+for template_path in "$SOURCE_TEMPLATES_DIR"/*/; do
+    template_name=$(basename "$template_path")
+    target_path="$TARGET_DEVCONTAINER_DIR/$template_name"
+
+    if [[ "$MODE" == "symlink" ]]; then
+        if [[ -e "$target_path" && "$FORCE_OVERWRITE" == "false" ]]; then
+            warn "Skipping $template_name (already exists, use --force to overwrite)."
         else
-            rm .devcontainer
-            ln -s "$EXPECTED_TARGET" .devcontainer
-            success "Linked devcontainer template ($TEMPLATE)."
+            ln -sfn "$template_path" "$target_path"
+            success "Linked template: $template_name"
         fi
     else
-        if [[ -e .devcontainer ]]; then
-            warn "Existing .devcontainer found. Backing up to .devcontainer.bak"
-            rm -rf .devcontainer.bak && mv .devcontainer .devcontainer.bak
+        if [[ -d "$target_path" && "$FORCE_OVERWRITE" == "false" ]]; then
+            warn "Skipping $template_name (already exists, use --force to overwrite)."
+        else
+            rm -rf "$target_path"
+            cp -R "$template_path" "$target_path"
+            success "Copied template: $template_name"
         fi
-        ln -s "$EXPECTED_TARGET" .devcontainer
-        success "Linked devcontainer template ($TEMPLATE)."
     fi
-else
-    if [[ -e .devcontainer ]]; then
-        warn "Existing .devcontainer found. Backing up to .devcontainer.bak"
-        rm -rf .devcontainer.bak && mv .devcontainer .devcontainer.bak
-    fi
-    cp -R "$EXPECTED_TARGET" .devcontainer
-    success "Installed devcontainer template ($TEMPLATE)."
-fi
+done
 
 ########################################
 # Shared Agent Configuration

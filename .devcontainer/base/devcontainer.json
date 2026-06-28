@@ -3,11 +3,10 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      "IMAGE_REGISTRY": "${localEnv:IMAGE_REGISTRY}",
-      "PROD_BASE_IMAGE": "${localEnv:PROD_BASE_IMAGE}"
+      "IMAGE_REGISTRY": "${localEnv:IMAGE_REGISTRY:local}",
+      "PROD_BASE_IMAGE": "${localEnv:PROD_BASE_IMAGE:local/web-deploy-base:latest}"
     }
   },
-  "workspaceFolder": "/workspaces/workspace",
   "remoteUser": "developer",
   "forwardPorts": [
     11434
@@ -18,8 +17,8 @@
   "containerEnv": {
     "BRAVE_API_KEY": "${localEnv:BRAVE_API_KEY}"
   },
-  "postCreateCommand": "bash ./agent-dev-env/.devcontainer/base/configure.sh",
-  "updateContentCommand": "bash ./agent-dev-env/.devcontainer/base/configure.sh",
+  "postCreateCommand": "bash ${containerWorkspaceFolder}/agent-dev-env/.devcontainer/base/configure.sh",
+  "updateContentCommand": "bash ${containerWorkspaceFolder}/agent-dev-env/.devcontainer/base/configure.sh",
   "customizations": {
     "vscode": {
       "extensions": [

@@ -11,6 +11,8 @@ ENV \
     NPM_CONFIG_UPDATE_NOTIFIER=false \
     NPM_CONFIG_FUND=false
 
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -28,27 +30,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxdamage1 \
     libxext6 \
     libxfixes3 \
-    librandr2 \
+    libxrandr2 \
     libgbm1 \
     libpango-1.0-0 \
     libcairo2 \
     libasound2 \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Create a dedicated development user instead of renaming "node"
-RUN groupadd -g 1001 developer \
- && useradd -m -u 1001 -g developer -s /bin/bash developer
+# Create a dedicated development user if needed
+RUN if ! getent group developer >/dev/null; then \
+    groupadd -g 1001 developer; \
+    fi \
+    && if ! id -u developer >/dev/null 2>&1; then \
+    useradd -m -u 1001 -g developer -s /bin/bash developer; \
+    fi
 
-RUN npm install -g opencode
+
+RUN npm install -g opencode-ai
 
 RUN mkdir -p \
-    /workspaces/workspace \
+    /workspaces \
     /home/developer/.config/opencode
 
 RUN chown -R developer:developer \
     /workspaces \
     /home/developer
-
-WORKDIR /workspaces/workspace
 
 USER developer
