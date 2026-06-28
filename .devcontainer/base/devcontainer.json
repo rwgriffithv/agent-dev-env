@@ -18,7 +18,6 @@
     "BRAVE_API_KEY": "${localEnv:BRAVE_API_KEY}"
   },
   "postCreateCommand": "bash ${containerWorkspaceFolder}/agent-dev-env/.devcontainer/base/configure.sh",
-  "updateContentCommand": "bash ${containerWorkspaceFolder}/agent-dev-env/.devcontainer/base/configure.sh",
   "customizations": {
     "vscode": {
       "extensions": [

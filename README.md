@@ -100,6 +100,14 @@ Setup host dependencies and bootstrap the parent repository:
 
 The setup and bootstrap processes are idempotent.
 
+> **Important:** These scripts run on the **host machine**, not inside a devcontainer.
+> They install system packages, configure Ollama, pull models, and set up project symlinks —
+> all operations that belong on the host. If you attempt to run them inside a
+> devcontainer, they will abort with a clear error message.
+>
+> Devcontainer initialization is handled by the `postCreateCommand` defined in
+> `.devcontainer/devcontainer.json`, which runs `configure.sh` on container start.
+
 ---
 
 # Project Customization
@@ -163,10 +171,14 @@ For a typical project:
 
 1. Clone the repository.
 2. Initialize Git submodules.
-3. Run each submodule's setup-host and bootstrap scripts.
+3. Run each submodule's setup-host and bootstrap scripts (host machine only).
 4. Open the project in VS Code.
 5. Reopen in the Dev Container.
 6. Launch OpenCode.
+
+> Steps 3-5 are intentionally separate: setup/bootstrap prepare the host, the
+> devcontainer provides the isolated runtime. The scripts include a safety guard
+> that aborts if run inside a devcontainer.
 
 ```bash
 opencode
