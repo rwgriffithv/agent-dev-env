@@ -118,6 +118,19 @@ if ! systemctl is-active --quiet ollama || [ "$changed" = true ]; then
     sudo systemctl restart ollama
 fi
 
+# Wait for Ollama to be ready before pulling models
+info "Waiting for Ollama to be ready..."
+for i in $(seq 1 30); do
+    if ollama list > /dev/null 2>&1; then
+        success "Ollama is ready."
+        break
+    fi
+    if [ "$i" -eq 30 ]; then
+        fail "Ollama did not become ready within 30 seconds."
+    fi
+    sleep 1
+done
+
 ########################################
 # Pull models
 ########################################
