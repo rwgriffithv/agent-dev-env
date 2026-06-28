@@ -7,9 +7,7 @@
 set -euo pipefail
 
 # Load .env file if it exists
-if [ -f ".env" ]; then
-    export $(grep -v '^#' .env | xargs)
-fi
+set -a; [ -f .env ] && . .env; set +a
 
 ########################################
 # Logging
@@ -22,9 +20,9 @@ BLUE="\033[0;34m"
 NC="\033[0m"
 
 info() { echo -e "${BLUE}==>${NC} $*"; }
-success() { echo -e "${GREEN}✓${NC} $*"; }
-warn() { echo -e "${YELLOW}⚠${NC} $*"; }
-fail() { echo -e "${RED}✗${NC} $*"; exit 1; }
+success() { echo -e "${GREEN}*${NC} $*"; }
+warn() { echo -e "${YELLOW}*${NC} $*"; }
+fail() { echo -e "${RED}*${NC} $*"; exit 1; }
 
 ########################################
 # Pathing
@@ -48,7 +46,15 @@ fi
 
 mkdir -p "$CONFIG_DIR"
 
-install -m 644 "$SOURCE_CONFIG" "$CONFIG_FILE"
+if [[ -f "$CONFIG_FILE" && "${1:-}" != "--force" ]]; then
+    warn "OpenCode config already exists at $CONFIG_FILE (use --force to overwrite)."
+else
+    # Resolve __WORKSPACE__ placeholder to the current workspace root
+    WORKSPACE_ROOT="$(pwd)"
+    sed "s|__WORKSPACE__|${WORKSPACE_ROOT}|g" "$SOURCE_CONFIG" > "$CONFIG_FILE"
+    chmod 644 "$CONFIG_FILE"
+    success "Installed OpenCode configuration."
+fi
 
 ########################################
 # Detect Ollama

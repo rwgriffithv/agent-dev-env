@@ -7,9 +7,7 @@
 set -euo pipefail
 
 # Load .env file if it exists
-if [ -f ".env" ]; then
-    export $(grep -v '^#' .env | xargs)
-fi
+set -a; [ -f .env ] && . .env; set +a
 
 ########################################
 # Logging
@@ -22,17 +20,9 @@ BLUE="\033[0;34m"
 NC="\033[0m"
 
 info() { echo -e "${BLUE}==>${NC} $*"; }
-success() { echo -e "${GREEN}✓${NC} $*"; }
-warn() { echo -e "${YELLOW}⚠${NC} $*"; }
-fail() { echo -e "${RED}✗${NC} $*"; exit 1; }
-
-########################################
-# Devcontainer guard
-########################################
-
-if [[ -n "${REMOTE_CONTAINERS:-}" ]] || [[ -n "${CODESPACES:-}" ]]; then
-    fail "Devcontainer environment detected. Bootstrap must run on host."
-fi
+success() { echo -e "${GREEN}*${NC} $*"; }
+warn() { echo -e "${YELLOW}*${NC} $*"; }
+fail() { echo -e "${RED}*${NC} $*"; exit 1; }
 
 ########################################
 # Pathing
@@ -98,6 +88,14 @@ Please ensure it is defined in your .env file or set manually."
 done
 
 ########################################
+# Devcontainer guard
+########################################
+
+if [[ -n "${REMOTE_CONTAINERS:-}" ]] || [[ -n "${CODESPACES:-}" ]]; then
+    fail "Devcontainer environment detected. Bootstrap must run on host."
+fi
+
+########################################
 # Install Devcontainers
 ########################################
 
@@ -135,9 +133,14 @@ done
 ########################################
 
 mkdir -p .opencode
-rm -rf .opencode/skills
-ln -sfn "../${SUBMODULE_REL}/skills" .opencode/skills
-success "Linked shared skills."
+if [[ -L .opencode/skills ]] && [[ "$(readlink .opencode/skills)" == "../${SUBMODULE_REL}/skills" ]]; then
+    success "Skills symlink already correct."
+elif [[ -e .opencode/skills ]]; then
+    warn "Skipping .opencode/skills — not a symlink (custom skills detected)."
+else
+    ln -sfn "../${SUBMODULE_REL}/skills" .opencode/skills
+    success "Linked shared skills."
+fi
 
 mkdir -p rules
 if [[ ! -f AGENTS.md ]]; then
@@ -154,7 +157,7 @@ fi
 ########################################
 
 touch .gitignore
-[[ "$MODE" == "symlink" ]] && grep -qxF ".devcontainer" .gitignore || echo ".devcontainer" >> .gitignore
+[[ "$MODE" == "symlink" ]] && grep -qxF ".devcontainer/base" .gitignore || echo ".devcontainer/base" >> .gitignore
 grep -qxF ".opencode/skills" .gitignore || echo ".opencode/skills" >> .gitignore
 success "Updated .gitignore."
 

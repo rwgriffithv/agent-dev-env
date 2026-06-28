@@ -24,7 +24,7 @@ The build process for this dev container is configurable using environment varia
 | `IMAGE_REGISTRY` | The registry or organization prefix used for pulling base images. | `local` |
 | `PROD_BASE_IMAGE` | The full image identifier to use as the build foundation. | `${IMAGE_REGISTRY}/web-deploy-base:latest` |
 
-See `https://github.com/rwgriffithv/web-deploy-env` for the default production base image.
+The default base image is built from the companion `web-deploy-env` toolkit. You may replace it with any Debian-based image.
 
 ### How to Override
 
@@ -45,7 +45,7 @@ The build process resolves the base image using a chained fallback mechanism:
 2. If unset or empty, it defaults to `${IMAGE_REGISTRY}/web-deploy-base:latest`.
 3. If `IMAGE_REGISTRY` is also missing, it defaults to `local/web-deploy-base:latest`.
 
-This allows for seamless local development while providing the flexibility to switch between different registry environments (e.g., local, staging, or production) without modifying the `Dockerfile`.
+This allows for seamless local development while providing the flexibility to switch between custom base images without modifying the `Dockerfile`.
 
 ---
 

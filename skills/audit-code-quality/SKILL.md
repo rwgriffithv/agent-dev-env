@@ -24,7 +24,7 @@ description: Proactive scan of codebase for security, linting, and architectural
 
 ### Phase 3: Remediation Strategy
 - **Crucial:** Never fix more than 5 issues in a single commit.
-- If an issue is "architectural" (e.g., deeply coupled components), do not fix it immediately. Use `architect-solution` to plan a refactor instead.
+- If an issue is "architectural" (e.g., deeply coupled components), do not fix it immediately. Use `architect-feature` to plan a refactor instead.
 
 ### Phase 4: Reporting (Replaces Memory)
 Create a formal report file:

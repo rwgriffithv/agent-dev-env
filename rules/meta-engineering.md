@@ -54,6 +54,31 @@ Skills define reusable agent capabilities (SOPs) across repositories.
 
 Skills are globally reusable and must remain stack-agnostic.
 
+## SKILL.md Template
+
+Every skill must follow this exact format:
+
+```markdown
+---
+name: <skill-name>
+description: <one-line description of what the skill does>
+---
+
+## What I do
+- <concise bullet-list of responsibilities>
+- <each bullet is one capability>
+
+## When to use me
+<one-to-two sentence guidance on when to invoke this skill>
+
+## Execution Rules
+- <specific operational constraints>
+- <validation criteria>
+- <completion conditions>
+```
+
+Files must use YAML frontmatter with `name` and `description` keys, followed by exactly three sections: "What I do", "When to use me", and "Execution Rules". Section headers must be exact — no parenthetical variations.
+
 ---
 
 # 4. Rules System Architecture (IMPORTANT)

@@ -65,13 +65,13 @@
         "-y",
         "@modelcontextprotocol/server-sqlite",
         "--db-path",
-        "/workspaces/workspace/database.sqlite"
+        "__WORKSPACE__/database.sqlite"
       ]
     }
   },
   "permission": {
     "skill": {
-      "*": "allow"
+      "*": "ask"
     }
   }
 }

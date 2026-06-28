@@ -49,12 +49,11 @@ This reduces image size and improves build caching behavior.
 
 ---
 
-# 5. Standard Workspace Path
+# 5. Workspace Path
 
-* Use `/workspaces/workspace` as the canonical working directory.
-* All devcontainers must assume this as the project root unless explicitly overridden.
-
-This ensures consistency across environments and tooling.
+* VS Code defaults the workspace to `/workspaces/<repo-name>`. Do not override this.
+* All tools and scripts should use relative paths from the workspace root.
+* The `configure.sh` resolves `__WORKSPACE__` placeholders dynamically via `$(pwd)`.
 
 ---
 

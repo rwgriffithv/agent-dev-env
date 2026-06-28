@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     sqlite3 \
     openssh-client \
+    sudo \
     libglib2.0-0 \
     libnss3 \
     libatk1.0-0 \
@@ -57,3 +58,6 @@ RUN chown -R developer:developer \
     /home/developer
 
 USER developer
+
+# Pre-install Playwright browser for MCP-based UI testing
+RUN npx -y playwright install chromium 2>/dev/null || true

@@ -8,7 +8,7 @@ description: Manage the project Knowledge Graph; create associative links betwee
 - Query the graph to find non-obvious relationships.
 - Curate high-level connections to speed up agent decision-making.
 
-## When to use me (vs. Documentation)
+## When to use me
 - **Use Documentation (`docs/`)** for: Definitive technical specs, post-mortems, architectural blueprints, and human-readable onboarding guides.
 - **Use Memory (Graph):** For connecting the dots. (e.g., "Note that this file affects that API," "This variable naming convention is related to that project rule," "We tried this fix and it failed").
 

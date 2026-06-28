@@ -1,4 +1,4 @@
-# 🤖 Agent Development Environment
+# Agent Development Environment
 
 A version-controlled **agentic development toolkit** designed to be included as a **Git submodule** in software projects.
 
@@ -58,7 +58,6 @@ Because these components live in a shared repository, improvements can be rolled
 ```text
 agent-dev-env/
 ├── .devcontainer/      # Shared development environments
-├── docs/               # Toolkit documentation
 ├── rules/              # Shared engineering rules
 ├── scripts/            # Bootstrap and maintenance scripts
 ├── skills/             # Reusable OpenCode skills
@@ -68,12 +67,23 @@ agent-dev-env/
 
 ---
 
+# Host Requirements
+
+| Dependency | Required | Purpose |
+|---|---|---|
+| **Docker** | Yes | Build and run containers. Setup scripts use it for deployment. |
+| **Ollama** | Yes | Local LLM inference. `setup-host.sh` installs it automatically. |
+| **Brave API Key** | Yes | Web search via MCP. Set `BRAVE_API_KEY` in `.env`. |
+| **VS Code** | Recommended | Dev Container support. Any Dev Container-compatible editor works. |
+
+---
+
 # Installing into a Project
 
 Add the submodule to your repository:
 
 ```bash
-git submodule add <repository-url> web-deploy-env
+git submodule add <repository-url> agent-dev-env
 git submodule update --init --recursive
 
 ```
@@ -83,8 +93,7 @@ git submodule update --init --recursive
 Create/update the `.env` file in your project root with the following requirements:
 
 ```text
-DOMAIN=yourdomain.com
-TUNNEL_TOKEN=your_cloudflare_tunnel_token
+BRAVE_API_KEY=your_brave_api_key
 
 ```
 
@@ -93,8 +102,8 @@ TUNNEL_TOKEN=your_cloudflare_tunnel_token
 Setup host dependencies and bootstrap the parent repository:
 
 ```bash
-./web-deploy-env/scripts/setup-host.sh
-./web-deploy-env/scripts/bootstrap.sh
+./agent-dev-env/scripts/setup-host.sh
+./agent-dev-env/scripts/bootstrap.sh
 
 ```
 
