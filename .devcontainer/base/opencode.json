@@ -17,7 +17,7 @@
       }
     }
   },
-  "defaultModel": "qwen2.5-coder:7b",
+  "model": "qwen2.5-coder:7b",
   "instructions": [
     "AGENTS.md",
     "agent-dev-env/rules/rules.md"
