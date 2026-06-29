@@ -65,7 +65,7 @@
         "-y",
         "@modelcontextprotocol/server-sqlite",
         "--db-path",
-        "__WORKSPACE__/database.sqlite"
+        "__WORKSPACE__/data/dev.db"
       ]
     }
   },
