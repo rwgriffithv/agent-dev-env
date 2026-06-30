@@ -23,7 +23,7 @@ description: Root cause analysis protocol for transforming runtime logs/stack tr
 
 ### Phase 4: Documentation (Replaces Memory)
 Instead of saving to memory, create a file:
-- **Path:** `docs/post-mortems/YYYY-MM-DD-[issue-summary].md`
+- **Path:** `docs/tmp/YYYY-MM-DD-[issue-summary]-post-mortem.md`
 - **Required Template:**
   - **Issue:** Summary of the bug.
   - **Symptoms:** Logs/Stack traces.

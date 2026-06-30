@@ -19,8 +19,8 @@ description: High-level design and planning protocol for complex feature impleme
 - **Justification:** Write a 3-sentence justification for why this approach is better than the alternative.
 
 ### Phase 3: The Blueprint
-- Create a `PLAN.md` file in the root. 
-- Map out the files that need to be created or modified. 
+- Create a `docs/tmp/PLAN-<title>.md` file.
+- Map out the files that need to be created or modified.
 - List any `rules/*.md` that apply to this plan.
 
 ### Phase 4: Approval
