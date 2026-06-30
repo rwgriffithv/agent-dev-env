@@ -28,7 +28,7 @@ description: Proactive scan of codebase for security, linting, and architectural
 
 ### Phase 4: Reporting (Replaces Memory)
 Create a formal report file:
-- **Path:** `docs/audits/YYYY-MM-DD-audit-report.md`
+- **Path:** `docs/tmp/YYYY-MM-DD-audit-report.md`
 - **Required Template:**
   - **Scope:** Files/modules audited.
   - **Summary:** High/Medium/Low severity count.
