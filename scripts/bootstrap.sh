@@ -96,6 +96,23 @@ if [[ -n "${REMOTE_CONTAINERS:-}" ]] || [[ -n "${CODESPACES:-}" ]]; then
 fi
 
 ########################################
+# Build agent-dev-env Image
+########################################
+
+IMAGE_REGISTRY="${IMAGE_REGISTRY:-local}"
+AGENT_IMAGE="${IMAGE_REGISTRY}/agent-dev-env:latest"
+
+if [[ "$FORCE_OVERWRITE" == true ]] || [[ -z "$(docker images -q "${AGENT_IMAGE}" 2>/dev/null)" ]]; then
+    info "Building agent-dev-env image: ${AGENT_IMAGE}..."
+    docker build -t "${AGENT_IMAGE}" \
+      -f "${SUBMODULE_DIR}/.devcontainer/base/Dockerfile" \
+      "${SUBMODULE_DIR}"
+    success "Built agent-dev-env image."
+else
+    success "Agent image ${AGENT_IMAGE} already exists."
+fi
+
+########################################
 # Install Devcontainers
 ########################################
 
