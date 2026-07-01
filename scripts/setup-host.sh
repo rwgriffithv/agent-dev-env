@@ -73,6 +73,7 @@ install_if_missing() {
 }
 
 install_if_missing curl
+install_if_missing zstd
 
 ########################################
 # Docker & VS Code Checks
